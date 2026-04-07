@@ -1,0 +1,24 @@
+# Environment / secrets — NEVER commit these
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Database (personal data, not needed in the repo)
+*.db
+*.db-shm
+*.db-wal
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Tracker</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <h1>Stock Tracker</h1>
+
+  <section>
+    <h2>Add Product</h2>
+    <form id="add-form">
+      <input name="url" type="url" placeholder="Product URL (Walmart / Target / Pokémon Center)" required />
+      <input name="max_price" type="number" step="0.01" min="0" placeholder="Max price ($)" />
+      <input name="desired_qty" type="number" min="1" value="1" placeholder="Qty" />
+      <button type="submit" class="btn-primary">Add to Watchlist</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Watchlist <button id="refresh-btn" class="btn-sm btn-secondary" onclick="loadAll()">Refresh</button></h2>
+    <div id="watchlist-wrap">
+      <table id="watchlist-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Retailer</th>
+            <th>Price</th>
+            <th>Max Price</th>
+            <th>Stock</th>
+            <th>Last Checked</th>
+            <th>Active</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="watchlist-body">
+          <tr><td colspan="8" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recent Agent Actions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Product</th>
+          <th>Action</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody id="actions-body">
+        <tr><td colspan="4" class="empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div id="status-bar"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
