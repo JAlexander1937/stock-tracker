@@ -7,16 +7,17 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div id="header">
-    <h1>Stock Tracker</h1>
-    <div class="theme-toggle">
-      <span class="toggle-icon">☀️</span>
-      <button id="theme-switch" role="switch" aria-checked="false" title="Toggle dark mode">
-        <span class="toggle-thumb"></span>
-      </button>
-      <span class="toggle-icon">🌙</span>
+  <div id="theme-modal">
+    <div id="theme-modal-box">
+      <p>Choose your display mode</p>
+      <div id="theme-modal-btns">
+        <button onclick="chooseTheme('light')">☀️ Light</button>
+        <button onclick="chooseTheme('dark')">🌙 Dark</button>
+      </div>
     </div>
   </div>
+
+  <h1>Stock Tracker</h1>
 
   <section>
     <h2>Add Product</h2>

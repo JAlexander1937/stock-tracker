@@ -186,23 +186,15 @@ async function manualScrape(id) {
   }
 }
 
-// ── Theme toggle ─────────────────────────────────────────────────────────────
+// ── Theme modal ───────────────────────────────────────────────────────────────
 
-const themeBtn = document.getElementById("theme-switch");
-
-function applyTheme(dark) {
-  document.body.classList.toggle("dark", dark);
-  themeBtn.setAttribute("aria-checked", dark ? "true" : "false");
+function chooseTheme(mode) {
+  document.body.classList.toggle("dark", mode === "dark");
+  document.getElementById("theme-modal").classList.add("hidden");
 }
 
-themeBtn.addEventListener("click", () => {
-  const dark = themeBtn.getAttribute("aria-checked") !== "true";
-  localStorage.setItem("theme", dark ? "dark" : "light");
-  applyTheme(dark);
-});
-
-// Restore saved preference (default: light)
-applyTheme(localStorage.getItem("theme") === "dark");
+// Show modal on every load/refresh
+document.getElementById("theme-modal").classList.remove("hidden");
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
