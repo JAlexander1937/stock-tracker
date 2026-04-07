@@ -9,12 +9,13 @@
 <body>
   <div id="header">
     <h1>Stock Tracker</h1>
-    <label class="theme-toggle" title="Toggle dark mode">
+    <div class="theme-toggle">
       <span class="toggle-icon">☀️</span>
-      <input type="checkbox" id="theme-switch" />
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <button id="theme-switch" role="switch" aria-checked="false" title="Toggle dark mode">
+        <span class="toggle-thumb"></span>
+      </button>
       <span class="toggle-icon">🌙</span>
-    </label>
+    </div>
   </div>
 
   <section>

@@ -188,15 +188,15 @@ async function manualScrape(id) {
 
 // ── Theme toggle ─────────────────────────────────────────────────────────────
 
-const themeSwitch = document.getElementById("theme-switch");
+const themeBtn = document.getElementById("theme-switch");
 
 function applyTheme(dark) {
   document.body.classList.toggle("dark", dark);
-  themeSwitch.checked = dark;
+  themeBtn.setAttribute("aria-checked", dark ? "true" : "false");
 }
 
-themeSwitch.addEventListener("change", () => {
-  const dark = themeSwitch.checked;
+themeBtn.addEventListener("click", () => {
+  const dark = themeBtn.getAttribute("aria-checked") !== "true";
   localStorage.setItem("theme", dark ? "dark" : "light");
   applyTheme(dark);
 });
