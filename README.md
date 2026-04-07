@@ -14,7 +14,6 @@ A personal tool that watches products on **Walmart**, **Target**, and **Pokémon
 - The app checks every tracked product every 60 seconds in the background
 - The moment something comes back in stock or hits your price — you get notified
 
-![Dashboard screenshot placeholder](https://placehold.co/800x400?text=Stock+Tracker+Dashboard)
 
 ---
 
