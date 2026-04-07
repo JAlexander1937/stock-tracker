@@ -21,13 +21,13 @@
 
   <section>
     <h2>Auto-Discovery — Keyword Searches</h2>
-    <p class="section-hint">Add a keyword and retailer. The app searches every 5 minutes and automatically tracks any new listings it finds.</p>
+    <p class="section-hint">Add a keyword and retailer. The app searches every 5 minutes and automatically tracks any new listings it finds. Works with <strong>Target</strong> and <strong>Pokémon Center</strong>. For Walmart, paste individual product URLs below instead.</p>
     <form id="search-form">
       <input name="keyword" type="text" placeholder="Search keyword (e.g. Charizard, Pokemon cards)" required />
       <select name="retailer">
-        <option value="walmart">Walmart</option>
         <option value="target">Target</option>
         <option value="pokemon_center">Pokémon Center</option>
+        <option value="walmart" disabled style="color:#aaa">Walmart (not supported — use URL)</option>
       </select>
       <input name="max_price" type="number" step="0.01" min="0" placeholder="Max price ($)" />
       <button type="submit" class="btn-primary">Add Search</button>

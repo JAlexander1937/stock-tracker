@@ -81,89 +81,17 @@ async def search_pokemon_center(keyword: str) -> list:
 
 
 # ── Walmart ───────────────────────────────────────────────────────────────────
+# Walmart's search page uses Akamai Bot Manager with an interactive press-and-hold
+# challenge that cannot be bypassed by headless or non-headless browsers without
+# paid proxy/CAPTCHA services. Keyword search is not supported for Walmart.
+# Individual product page monitoring (by URL) works fine.
 
 async def search_walmart(keyword: str) -> list:
-    results = []
-    url = f"https://www.walmart.com/search?q={quote_plus(keyword)}"
-    try:
-        async with async_playwright() as p:
-            browser, page = await _new_page(p)
-            await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            await page.wait_for_timeout(2000)
-
-            # Try __NEXT_DATA__ first
-            try:
-                next_data = await page.evaluate(
-                    "() => { const el = document.getElementById('__NEXT_DATA__'); "
-                    "return el ? el.textContent : null; }"
-                )
-                if next_data:
-                    data = json.loads(next_data)
-                    items = (
-                        data.get("props", {})
-                        .get("pageProps", {})
-                        .get("initialData", {})
-                        .get("searchResult", {})
-                        .get("itemStacks", [{}])[0]
-                        .get("items", [])
-                    )
-                    for item in items:
-                        try:
-                            product_url = item.get("canonicalUrl") or item.get("productPageUrl")
-                            if not product_url:
-                                continue
-                            if not product_url.startswith("http"):
-                                product_url = f"https://www.walmart.com{product_url}"
-                            price_info = item.get("priceInfo", {}).get("currentPrice", {})
-                            price = price_info.get("price") if isinstance(price_info, dict) else None
-                            results.append({
-                                "name": item.get("name"),
-                                "url": product_url,
-                                "price": price,
-                                "in_stock": item.get("availabilityStatus", "").upper() in ("IN_STOCK", "AVAILABLE"),
-                                "retailer": "walmart",
-                            })
-                        except Exception:
-                            continue
-                    if results:
-                        await browser.close()
-                        return results
-            except Exception:
-                pass
-
-            # Fallback: DOM
-            cards = await page.query_selector_all(
-                "[data-item-id], [data-testid='list-view'], .search-result-gridview-item"
-            )
-            for card in cards:
-                try:
-                    link_el = await card.query_selector("a[href*='/ip/']")
-                    name_el = await card.query_selector("[class*='product-title'], span[data-automation-id='product-title']")
-                    price_el = await card.query_selector("[itemprop='price'], [class*='price-main']")
-                    href = await link_el.get_attribute("href") if link_el else None
-                    if not href:
-                        continue
-                    product_url = href if href.startswith("http") else f"https://www.walmart.com{href}"
-                    name = (await name_el.inner_text()).strip() if name_el else None
-                    price = None
-                    if price_el:
-                        t = await price_el.get_attribute("content") or await price_el.inner_text()
-                        m = re.search(r"[\d.]+", t.replace(",", ""))
-                        if m:
-                            price = float(m.group())
-                    results.append({
-                        "name": name,
-                        "url": product_url,
-                        "price": price,
-                        "in_stock": True,
-                        "retailer": "walmart",
-                    })
-                except Exception:
-                    continue
-            await browser.close()
-    except Exception as e:
-        logger.error("Walmart search failed for '%s': %s", keyword, e)
-    return results
+    raise NotImplementedError(
+        "Walmart keyword search is not supported. Walmart uses enterprise-grade bot "
+        "protection (Akamai) that blocks all automated search. To track a Walmart product, "
+        "paste the product URL directly into the 'Add Product by URL' form."
+    )
 
 
 # ── Target ────────────────────────────────────────────────────────────────────

@@ -187,6 +187,11 @@ def list_searches():
 def add_search(body: SearchCreate):
     if body.retailer not in VALID_RETAILERS:
         raise HTTPException(status_code=400, detail=f"Retailer must be one of: {', '.join(VALID_RETAILERS)}")
+    if body.retailer == "walmart":
+        raise HTTPException(
+            status_code=400,
+            detail="Walmart keyword search is not supported — Walmart blocks all automated search with enterprise bot protection. To track a Walmart product, paste the product URL directly into 'Add Product by URL'."
+        )
     with get_conn() as conn:
         try:
             conn.execute(
