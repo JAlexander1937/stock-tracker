@@ -8,10 +8,11 @@ A personal tool that watches products on **Walmart**, **Target**, and **Pokémon
 
 ## What it does
 
-- Paste any Walmart, Target, or Pokémon Center product URL
-- Set a max price you're willing to pay
-- The app checks that page every 60 seconds in the background
-- The moment it comes back in stock or hits your price — you get notified
+- **Keyword auto-discovery** — type a search term and pick a retailer. The app searches that site every 5 minutes and automatically adds any new listings it finds to your watchlist. No copying URLs.
+- **Manual URL tracking** — paste a specific product URL if you already know exactly what you want
+- Set a max price per product or search — only get alerted when the price is right
+- The app checks every tracked product every 60 seconds in the background
+- The moment something comes back in stock or hits your price — you get notified
 
 ![Dashboard screenshot placeholder](https://placehold.co/800x400?text=Stock+Tracker+Dashboard)
 
@@ -171,14 +172,32 @@ You should see the Stock Tracker dashboard. The app is now running and polling e
 
 ## How to use it
 
-### Adding a product
-1. Find the product on Walmart, Target, or Pokémon Center
-2. Copy the URL from your browser's address bar
-3. Paste it into the **Add Product** form
-4. Set a **Max Price** if you want price-drop alerts (leave blank to only get restock alerts)
-5. Click **Add to Watchlist**
+### Option 1 — Keyword Auto-Discovery (recommended)
 
-### The dashboard
+This is the easiest way. Instead of tracking one product at a time, you give the app a search term and it finds everything for you.
+
+1. Go to the **Auto-Discovery** section at the top of the dashboard
+2. Type a keyword — be as specific as you want (e.g. `Charizard ex booster bundle`, `Pokemon 151 booster box`)
+3. Pick a retailer from the dropdown
+4. Set a **Max Price** if you only want to be notified when the price is right
+5. Click **Add Search**
+
+The app will search that retailer every **5 minutes** and automatically add any new listings it finds to your watchlist. When a newly discovered product is already in stock, the AI agent fires immediately.
+
+- Click **Run Now** next to any search to trigger it instantly instead of waiting
+- Toggle a search off to pause it without deleting it
+- The more specific your keyword, the better — `"Pokemon 151"` beats `"Pokemon"`
+
+### Option 2 — Add a specific product URL
+
+If you already know exactly which product page you want to track:
+
+1. Copy the URL from your browser's address bar on Walmart, Target, or Pokémon Center
+2. Paste it into the **Add Product by URL** form
+3. Set a **Max Price** if you want price-drop alerts (leave blank to alert on any restock)
+4. Click **Add to Watchlist**
+
+### The watchlist table
 | Column | What it means |
 |---|---|
 | Product | Name + link to the product page |
@@ -239,11 +258,12 @@ stock-tracker/
 │   ├── database.py          Database setup (creates itself automatically)
 │   ├── agent.py             AI agent powered by Claude
 │   ├── alerts.py            Sends notifications (Pushover, SMS, desktop)
-│   ├── scheduler.py         Runs the scrapers every 60 seconds
+│   ├── scheduler.py         Polls products every 60s, runs searches every 5 min
 │   └── scrapers/
-│       ├── walmart.py       Walmart product scraper
-│       ├── target.py        Target product scraper
-│       └── pokemon_center.py  Pokémon Center product scraper
+│       ├── walmart.py       Walmart product page scraper
+│       ├── target.py        Target product page scraper
+│       ├── pokemon_center.py  Pokémon Center product page scraper
+│       └── search.py        Keyword search scrapers for all three retailers
 ├── frontend/
 │   ├── index.html           The web dashboard
 │   ├── style.css            Styling
