@@ -7,6 +7,7 @@ from typing import Optional
 
 from .database import get_conn
 from .scrapers import scrape, detect_retailer
+from .scrapers.search import search_retailer
 from .agent import run_agent
 
 logger = logging.getLogger(__name__)
@@ -113,11 +114,91 @@ async def poll_once():
             logger.error("Error polling product %s: %s", product["url"], e)
 
 
-async def run_scheduler(interval_seconds: int = 60):
-    logger.info("Scheduler started — polling every %ds", interval_seconds)
+async def discover_once():
+    """Run all active searches and auto-add any newly found products."""
+    with get_conn() as conn:
+        searches = conn.execute(
+            "SELECT * FROM searches WHERE active = 1"
+        ).fetchall()
+        searches = [dict(s) for s in searches]
+
+    for search in searches:
+        try:
+            logger.info("Running search: '%s' on %s", search["keyword"], search["retailer"])
+            found = await search_retailer(search["keyword"], search["retailer"])
+            new_count = 0
+
+            for item in found:
+                url = item.get("url")
+                if not url:
+                    continue
+                with get_conn() as conn:
+                    existing = conn.execute(
+                        "SELECT id FROM products WHERE url = ?", (url,)
+                    ).fetchone()
+                    if existing:
+                        continue
+                    # New product — auto-add it
+                    conn.execute(
+                        "INSERT INTO products (name, url, retailer, max_price, desired_qty) VALUES (?, ?, ?, ?, ?)",
+                        (
+                            item.get("name"),
+                            url,
+                            search["retailer"],
+                            search.get("max_price"),
+                            search.get("desired_qty", 1),
+                        ),
+                    )
+                    new_id = conn.execute(
+                        "SELECT id FROM products WHERE url = ?", (url,)
+                    ).fetchone()["id"]
+                new_count += 1
+                logger.info("Auto-added new product: %s", item.get("name") or url)
+
+                # Immediately scrape and run agent on new discovery
+                try:
+                    scrape_result = await scrape(url)
+                    with get_conn() as conn:
+                        conn.execute(
+                            "INSERT INTO snapshots (product_id, price, in_stock, quantity) VALUES (?, ?, ?, ?)",
+                            (new_id, scrape_result.get("price"), 1 if scrape_result.get("in_stock") else 0, scrape_result.get("quantity")),
+                        )
+                    if scrape_result.get("in_stock"):
+                        product_row = {"id": new_id, "url": url, "retailer": search["retailer"],
+                                       "name": item.get("name"), "max_price": search.get("max_price"),
+                                       "desired_qty": search.get("desired_qty", 1)}
+                        agent_result = run_agent(product_row, scrape_result)
+                        save_action(new_id, agent_result["action"], agent_result)
+                except Exception as e:
+                    logger.error("Error scraping new product %s: %s", url, e)
+
+            # Update last_run_at
+            with get_conn() as conn:
+                conn.execute(
+                    "UPDATE searches SET last_run_at = datetime('now') WHERE id = ?",
+                    (search["id"],),
+                )
+            if new_count:
+                logger.info("Search '%s' on %s: %d new products found", search["keyword"], search["retailer"], new_count)
+        except Exception as e:
+            logger.error("Search error for '%s' on %s: %s", search["keyword"], search["retailer"], e)
+
+
+async def run_scheduler(interval_seconds: int = 60, search_interval_seconds: int = 300):
+    logger.info("Scheduler started — polling every %ds, searches every %ds", interval_seconds, search_interval_seconds)
+    search_elapsed = search_interval_seconds  # run searches immediately on first cycle
     while True:
         try:
             await poll_once()
         except Exception as e:
             logger.error("Poll cycle error: %s", e)
+
+        search_elapsed += interval_seconds
+        if search_elapsed >= search_interval_seconds:
+            search_elapsed = 0
+            try:
+                await discover_once()
+            except Exception as e:
+                logger.error("Discovery cycle error: %s", e)
+
         await asyncio.sleep(interval_seconds)

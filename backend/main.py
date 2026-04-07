@@ -17,7 +17,8 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 from .database import get_conn, init_db
 from .scrapers import scrape, detect_retailer
-from .scheduler import run_scheduler, poll_once
+from .scrapers.search import search_retailer
+from .scheduler import run_scheduler, poll_once, discover_once
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -157,6 +158,88 @@ def get_actions(limit: int = 50):
             (limit,),
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+# ── Searches ─────────────────────────────────────────────────────────────────
+
+VALID_RETAILERS = {"walmart", "target", "pokemon_center"}
+
+class SearchCreate(BaseModel):
+    keyword: str
+    retailer: str
+    max_price: Optional[float] = None
+    desired_qty: int = 1
+
+class SearchUpdate(BaseModel):
+    max_price: Optional[float] = None
+    desired_qty: Optional[int] = None
+    active: Optional[bool] = None
+
+
+@app.get("/searches")
+def list_searches():
+    with get_conn() as conn:
+        rows = conn.execute("SELECT * FROM searches ORDER BY added_at DESC").fetchall()
+    return [dict(r) for r in rows]
+
+
+@app.post("/searches", status_code=201)
+def add_search(body: SearchCreate):
+    if body.retailer not in VALID_RETAILERS:
+        raise HTTPException(status_code=400, detail=f"Retailer must be one of: {', '.join(VALID_RETAILERS)}")
+    with get_conn() as conn:
+        try:
+            conn.execute(
+                "INSERT INTO searches (keyword, retailer, max_price, desired_qty) VALUES (?, ?, ?, ?)",
+                (body.keyword.strip(), body.retailer, body.max_price, body.desired_qty),
+            )
+            row = conn.execute(
+                "SELECT * FROM searches WHERE keyword = ? AND retailer = ?",
+                (body.keyword.strip(), body.retailer),
+            ).fetchone()
+        except Exception as e:
+            if "UNIQUE" in str(e):
+                raise HTTPException(status_code=409, detail="That keyword + retailer search already exists.")
+            raise
+    return dict(row)
+
+
+@app.put("/searches/{search_id}")
+def update_search(search_id: int, body: SearchUpdate):
+    fields = {k: v for k, v in body.model_dump().items() if v is not None}
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields to update.")
+    if "active" in fields:
+        fields["active"] = 1 if fields["active"] else 0
+    set_clause = ", ".join(f"{k} = ?" for k in fields)
+    values = list(fields.values()) + [search_id]
+    with get_conn() as conn:
+        conn.execute(f"UPDATE searches SET {set_clause} WHERE id = ?", values)
+        row = conn.execute("SELECT * FROM searches WHERE id = ?", (search_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Search not found.")
+    return dict(row)
+
+
+@app.delete("/searches/{search_id}", status_code=204)
+def delete_search(search_id: int):
+    with get_conn() as conn:
+        result = conn.execute("DELETE FROM searches WHERE id = ?", (search_id,))
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Search not found.")
+
+
+@app.post("/searches/{search_id}/run")
+async def run_search_now(search_id: int):
+    with get_conn() as conn:
+        row = conn.execute("SELECT * FROM searches WHERE id = ?", (search_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Search not found.")
+        search = dict(row)
+    found = await search_retailer(search["keyword"], search["retailer"])
+    with get_conn() as conn:
+        conn.execute("UPDATE searches SET last_run_at = datetime('now') WHERE id = ?", (search_id,))
+    return {"found": len(found), "results": found[:20]}
 
 
 # ── Manual scrape trigger ────────────────────────────────────────────────────

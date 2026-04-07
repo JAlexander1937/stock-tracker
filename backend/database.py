@@ -54,4 +54,16 @@ def init_db():
                 result      TEXT,
                 created_at  TEXT DEFAULT (datetime('now'))
             );
+
+            CREATE TABLE IF NOT EXISTS searches (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                keyword     TEXT NOT NULL,
+                retailer    TEXT NOT NULL,
+                max_price   REAL,
+                desired_qty INTEGER DEFAULT 1,
+                active      INTEGER DEFAULT 1,
+                added_at    TEXT DEFAULT (datetime('now')),
+                last_run_at TEXT,
+                UNIQUE(keyword, retailer)
+            );
         """)

@@ -47,7 +47,7 @@ function actionBadge(type) {
 // ── Load / render ─────────────────────────────────────────────────────────────
 
 async function loadAll() {
-  await Promise.all([loadProducts(), loadActions()]);
+  await Promise.all([loadSearches(), loadProducts(), loadActions()]);
 }
 
 async function loadProducts() {
@@ -120,6 +120,97 @@ function renderActions(actions) {
         <td>${result.reason || "—"}</td>
       </tr>`;
   }).join("");
+}
+
+// ── Searches ─────────────────────────────────────────────────────────────────
+
+async function loadSearches() {
+  try {
+    const res = await fetch(`${API}/searches`);
+    const searches = await res.json();
+    renderSearches(searches);
+  } catch {
+    document.getElementById("searches-body").innerHTML =
+      `<tr><td colspan="6" class="empty">Failed to load searches.</td></tr>`;
+  }
+}
+
+function renderSearches(searches) {
+  const tbody = document.getElementById("searches-body");
+  if (!searches.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">No searches yet. Add a keyword above to start auto-discovery.</td></tr>`;
+    return;
+  }
+  const retailerLabel = { walmart: "Walmart", target: "Target", pokemon_center: "Pokémon Center" };
+  tbody.innerHTML = searches.map(s => `
+    <tr>
+      <td><strong>${s.keyword}</strong></td>
+      <td>${retailerBadge(s.retailer)}</td>
+      <td>${fmt(s.max_price)}</td>
+      <td>${fmtDate(s.last_run_at)}</td>
+      <td>
+        <label style="cursor:pointer">
+          <input type="checkbox" onchange="toggleSearch(${s.id}, this.checked)" ${s.active ? "checked" : ""} />
+        </label>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn-sm btn-secondary" onclick="runSearchNow(${s.id})">Run Now</button>
+        <button class="btn-sm btn-danger" onclick="deleteSearch(${s.id})">✕</button>
+      </td>
+    </tr>`).join("");
+}
+
+document.getElementById("search-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  const body = { keyword: data.keyword, retailer: data.retailer };
+  if (data.max_price) body.max_price = parseFloat(data.max_price);
+
+  try {
+    const res = await fetch(`${API}/searches`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Failed to add search.");
+    }
+    showStatus("Search added — first run in up to 5 minutes.");
+    e.target.reset();
+    loadSearches();
+  } catch (err) {
+    showStatus(err.message, true);
+  }
+});
+
+async function toggleSearch(id, active) {
+  await fetch(`${API}/searches/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  showStatus(active ? "Search activated." : "Search paused.");
+}
+
+async function deleteSearch(id) {
+  if (!confirm("Remove this search?")) return;
+  await fetch(`${API}/searches/${id}`, { method: "DELETE" });
+  showStatus("Search removed.");
+  loadSearches();
+}
+
+async function runSearchNow(id) {
+  showStatus("Running search…");
+  try {
+    const res = await fetch(`${API}/searches/${id}/run`, { method: "POST" });
+    const data = await res.json();
+    showStatus(`Found ${data.found} listings. New ones auto-added to watchlist.`);
+    loadProducts();
+    loadSearches();
+  } catch {
+    showStatus("Search failed.", true);
+  }
 }
 
 // ── Mutations ────────────────────────────────────────────────────────────────

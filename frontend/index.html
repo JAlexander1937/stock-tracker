@@ -20,7 +20,37 @@
   <h1>Stock Tracker</h1>
 
   <section>
-    <h2>Add Product</h2>
+    <h2>Auto-Discovery — Keyword Searches</h2>
+    <p class="section-hint">Add a keyword and retailer. The app searches every 5 minutes and automatically tracks any new listings it finds.</p>
+    <form id="search-form">
+      <input name="keyword" type="text" placeholder="Search keyword (e.g. Charizard, Pokemon cards)" required />
+      <select name="retailer">
+        <option value="walmart">Walmart</option>
+        <option value="target">Target</option>
+        <option value="pokemon_center">Pokémon Center</option>
+      </select>
+      <input name="max_price" type="number" step="0.01" min="0" placeholder="Max price ($)" />
+      <button type="submit" class="btn-primary">Add Search</button>
+    </form>
+    <table id="searches-table" style="margin-top:16px">
+      <thead>
+        <tr>
+          <th>Keyword</th>
+          <th>Retailer</th>
+          <th>Max Price</th>
+          <th>Last Run</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="searches-body">
+        <tr><td colspan="6" class="empty">No searches yet.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Add Product by URL</h2>
     <form id="add-form">
       <input name="url" type="url" placeholder="Product URL (Walmart / Target / Pokémon Center)" required />
       <input name="max_price" type="number" step="0.01" min="0" placeholder="Max price ($)" />

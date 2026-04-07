@@ -176,3 +176,19 @@ tr:hover td { background: var(--row-hover); }
 .empty { color: var(--text-muted); padding: 16px 0; text-align: center; }
 
 #refresh-btn { float: right; margin-top: -4px; }
+
+.section-hint {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* Search form select */
+#search-form select {
+  padding: 7px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
+  font-size: 14px;
+  background: var(--input-bg);
+  color: var(--text);
+}
