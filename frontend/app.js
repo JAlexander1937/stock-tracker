@@ -186,6 +186,24 @@ async function manualScrape(id) {
   }
 }
 
+// ── Theme toggle ─────────────────────────────────────────────────────────────
+
+const themeSwitch = document.getElementById("theme-switch");
+
+function applyTheme(dark) {
+  document.body.classList.toggle("dark", dark);
+  themeSwitch.checked = dark;
+}
+
+themeSwitch.addEventListener("change", () => {
+  const dark = themeSwitch.checked;
+  localStorage.setItem("theme", dark ? "dark" : "light");
+  applyTheme(dark);
+});
+
+// Restore saved preference (default: light)
+applyTheme(localStorage.getItem("theme") === "dark");
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 loadAll();
