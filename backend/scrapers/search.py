@@ -81,17 +81,62 @@ async def search_pokemon_center(keyword: str) -> list:
 
 
 # ── Walmart ───────────────────────────────────────────────────────────────────
-# Walmart's search page uses Akamai Bot Manager with an interactive press-and-hold
-# challenge that cannot be bypassed by headless or non-headless browsers without
-# paid proxy/CAPTCHA services. Keyword search is not supported for Walmart.
-# Individual product page monitoring (by URL) works fine.
+# Walmart's search page uses Akamai Bot Manager that blocks Playwright.
+# We call a Node.js script using Ulixee Hero which bypasses Akamai.
+
+import asyncio
+import json as _json
+import os as _os
+import sys as _sys
+
+_HERO_SCRIPT = _os.path.join(
+    _os.path.dirname(__file__), "..", "..", "hero", "walmart_search.js"
+)
+
 
 async def search_walmart(keyword: str) -> list:
-    raise NotImplementedError(
-        "Walmart keyword search is not supported. Walmart uses enterprise-grade bot "
-        "protection (Akamai) that blocks all automated search. To track a Walmart product, "
-        "paste the product URL directly into the 'Add Product by URL' form."
-    )
+    script = _os.path.abspath(_HERO_SCRIPT)
+    if not _os.path.exists(script):
+        logger.error("Hero script not found at %s", script)
+        return []
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "node", script, keyword,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
+        if stderr:
+            logger.debug("Hero stderr: %s", stderr.decode(errors="replace").strip())
+        raw = stdout.decode(errors="replace")
+        # Hero may print status lines before the JSON — find the JSON array
+        match = re.search(r'(\[.*\])', raw, re.DOTALL)
+        if not match:
+            logger.error("No JSON found in Hero output: %s", raw[:200])
+            return []
+        items = _json.loads(match.group(1))
+        # Dedupe by clean URL (strip query string)
+        seen = set()
+        results = []
+        for item in items:
+            url = re.sub(r"\?.*", "", item.get("url", ""))
+            if not url or url in seen:
+                continue
+            seen.add(url)
+            results.append({
+                "name": item.get("name"),
+                "url": url,
+                "price": item.get("price"),
+                "in_stock": bool(item.get("in_stock")),
+                "retailer": "walmart",
+            })
+        return results
+    except asyncio.TimeoutError:
+        logger.error("Hero Walmart search timed out for '%s'", keyword)
+        return []
+    except Exception as e:
+        logger.error("Hero Walmart search error for '%s': %s", keyword, e)
+        return []
 
 
 # ── Target ────────────────────────────────────────────────────────────────────

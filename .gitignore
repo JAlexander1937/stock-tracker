@@ -19,6 +19,9 @@ build/
 # macOS
 .DS_Store
 
+# Hero (Node.js scraper)
+hero/node_modules/
+
 # Editor
 .vscode/
 .idea/
