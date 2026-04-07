@@ -19,16 +19,20 @@ A personal tool that watches products on **Walmart**, **Target**, and **Pokémon
 
 ## Before you start — what you'll need
 
-You only need to install two things on your computer:
+You need to install three things on your computer:
 
 1. **Python** (version 3.9 or newer) — [Download here](https://www.python.org/downloads/)
    - On the installer, check the box that says **"Add Python to PATH"**
-2. **Git** — [Download here](https://git-scm.com/downloads)
+2. **Node.js** (version 18 or newer) — [Download here](https://nodejs.org/en/download)
+   - Just click through the installer with all the default options
+   - This is required for Walmart keyword search, which uses a Node.js browser to get past Walmart's bot protection
+3. **Git** — [Download here](https://git-scm.com/downloads)
    - Just click through the installer with all the default options
 
 To check if you already have them, open **Terminal** (Mac) or **Command Prompt** (Windows) and type:
 ```
 python3 --version
+node --version
 git --version
 ```
 If you see version numbers, you're good.
@@ -56,6 +60,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 playwright install chromium
+cd hero && npm install && cd ..
 ```
 
 **Windows:**
@@ -64,9 +69,11 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 playwright install chromium
+cd hero && npm install && cd ..
 ```
 
-> The `playwright install chromium` step downloads a headless browser the app uses to load product pages. It's about 150 MB and only needs to be done once.
+> `playwright install chromium` downloads a headless browser for Target and Pokémon Center scraping (~150 MB, one-time only).
+> `npm install` inside the `hero/` folder installs the Node.js browser used for Walmart keyword search (~50 MB, one-time only).
 
 ---
 
