@@ -237,10 +237,59 @@ async def run_search_now(search_id: int):
         if not row:
             raise HTTPException(status_code=404, detail="Search not found.")
         search = dict(row)
+
+    from .scheduler import save_snapshot, save_action
     found = await search_retailer(search["keyword"], search["retailer"])
+    new_count = 0
+
+    for item in found:
+        url = item.get("url")
+        if not url:
+            continue
+        with get_conn() as conn:
+            existing = conn.execute("SELECT id FROM products WHERE url = ?", (url,)).fetchone()
+            if existing:
+                continue
+            conn.execute(
+                "INSERT INTO products (name, url, retailer, max_price, desired_qty) VALUES (?, ?, ?, ?, ?)",
+                (item.get("name"), url, search["retailer"], search.get("max_price"), search.get("desired_qty", 1)),
+            )
+            new_id = conn.execute("SELECT id FROM products WHERE url = ?", (url,)).fetchone()["id"]
+        new_count += 1
+
+        try:
+            from .scrapers import scrape as do_scrape
+            scrape_result = await do_scrape(url)
+            save_snapshot(new_id, scrape_result)
+            if scrape_result.get("in_stock"):
+                from .agent import run_agent
+                product_row = {"id": new_id, "url": url, "retailer": search["retailer"],
+                               "name": item.get("name"), "max_price": search.get("max_price"),
+                               "desired_qty": search.get("desired_qty", 1)}
+                agent_result = run_agent(product_row, scrape_result)
+                save_action(new_id, agent_result["action"], agent_result)
+        except Exception as e:
+            logger.warning("Could not scrape new product %s: %s", url, e)
+
     with get_conn() as conn:
         conn.execute("UPDATE searches SET last_run_at = datetime('now') WHERE id = ?", (search_id,))
-    return {"found": len(found), "results": found[:20]}
+
+    return {"found": len(found), "new": new_count}
+
+
+# ── Bulk delete ──────────────────────────────────────────────────────────────
+
+class BulkDeleteRequest(BaseModel):
+    ids: list[int]
+
+@app.post("/products/bulk-delete", status_code=200)
+def bulk_delete_products(body: BulkDeleteRequest):
+    if not body.ids:
+        return {"deleted": 0}
+    placeholders = ",".join("?" * len(body.ids))
+    with get_conn() as conn:
+        result = conn.execute(f"DELETE FROM products WHERE id IN ({placeholders})", body.ids)
+    return {"deleted": result.rowcount}
 
 
 # ── Manual scrape trigger ────────────────────────────────────────────────────

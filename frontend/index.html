@@ -60,11 +60,12 @@
   </section>
 
   <section>
-    <h2>Watchlist <button id="refresh-btn" class="btn-sm btn-secondary" onclick="loadAll()">Refresh</button></h2>
+    <h2>Watchlist <button id="refresh-btn" class="btn-sm btn-secondary" onclick="loadAll()">Refresh</button> <button id="delete-selected-btn" class="btn-sm btn-danger" onclick="deleteSelected()" style="display:none">Delete Selected</button></h2>
     <div id="watchlist-wrap">
       <table id="watchlist-table">
         <thead>
           <tr>
+            <th><label style="cursor:pointer;white-space:nowrap"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" /> Select all</label></th>
             <th>Product</th>
             <th>Retailer</th>
             <th>Price</th>

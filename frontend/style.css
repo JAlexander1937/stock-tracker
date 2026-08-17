@@ -177,6 +177,9 @@ tr:hover td { background: var(--row-hover); }
 
 #refresh-btn { float: right; margin-top: -4px; }
 
+body.dark a { color: #e2e8f0; }
+body.dark a:visited { color: #cbd5e1; }
+
 .section-hint {
   color: var(--text-muted);
   font-size: 13px;

@@ -1,6 +1,4 @@
-from .pokemon_center import scrape as scrape_pokemon_center
-from .walmart import scrape as scrape_walmart
-from .target import scrape as scrape_target
+from .hero_runner import run_hero
 
 
 def detect_retailer(url: str) -> str:
@@ -16,9 +14,7 @@ def detect_retailer(url: str) -> str:
 
 async def scrape(url: str) -> dict:
     retailer = detect_retailer(url)
-    if retailer == "pokemon_center":
-        return await scrape_pokemon_center(url)
-    if retailer == "walmart":
-        return await scrape_walmart(url)
-    if retailer == "target":
-        return await scrape_target(url)
+    result = await run_hero(f"{retailer}_product", url)
+    # Ensure required keys are always present
+    defaults = {"name": None, "price": None, "in_stock": False, "quantity": None, "url": url, "retailer": retailer}
+    return {**defaults, **result}

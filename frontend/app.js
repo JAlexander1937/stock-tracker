@@ -63,8 +63,12 @@ async function loadProducts() {
 
 function renderWatchlist(products) {
   const tbody = document.getElementById("watchlist-body");
+  const selectAll = document.getElementById("select-all");
+  if (selectAll) selectAll.checked = false;
+  document.getElementById("delete-selected-btn").style.display = "none";
+
   if (!products.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">No products in watchlist yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">No products in watchlist yet.</td></tr>`;
     return;
   }
   tbody.innerHTML = products.map(p => {
@@ -73,6 +77,7 @@ function renderWatchlist(products) {
       : `<a href="${p.url}" target="_blank">${p.url.slice(0, 50)}…</a>`;
     return `
       <tr>
+        <td><input type="checkbox" class="row-select" data-id="${p.id}" onchange="onRowSelectChange()" /></td>
         <td>${name}</td>
         <td>${retailerBadge(p.retailer)}</td>
         <td>${fmt(p.last_price)}</td>
@@ -91,6 +96,40 @@ function renderWatchlist(products) {
         </td>
       </tr>`;
   }).join("");
+}
+
+function onRowSelectChange() {
+  const checkboxes = document.querySelectorAll(".row-select");
+  const checked = document.querySelectorAll(".row-select:checked");
+  const selectAll = document.getElementById("select-all");
+  if (selectAll) selectAll.checked = checked.length === checkboxes.length && checkboxes.length > 0;
+  document.getElementById("delete-selected-btn").style.display = checked.length ? "inline-block" : "none";
+}
+
+function toggleSelectAll(master) {
+  document.querySelectorAll(".row-select").forEach(cb => cb.checked = master.checked);
+  const checked = document.querySelectorAll(".row-select:checked");
+  document.getElementById("delete-selected-btn").style.display = checked.length ? "inline-block" : "none";
+}
+
+async function deleteSelected() {
+  const checked = document.querySelectorAll(".row-select:checked");
+  if (!checked.length) return;
+  if (!confirm(`Remove ${checked.length} product${checked.length > 1 ? "s" : ""} from your watchlist?`)) return;
+  const ids = Array.from(checked).map(cb => parseInt(cb.dataset.id));
+  showStatus("Deleting…");
+  try {
+    const res = await fetch(`${API}/products/bulk-delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
+    const data = await res.json();
+    showStatus(`Removed ${data.deleted} product${data.deleted !== 1 ? "s" : ""}.`);
+  } catch {
+    showStatus("Delete failed.", true);
+  }
+  loadProducts();
 }
 
 async function loadActions() {
@@ -205,7 +244,7 @@ async function runSearchNow(id) {
   try {
     const res = await fetch(`${API}/searches/${id}/run`, { method: "POST" });
     const data = await res.json();
-    showStatus(`Found ${data.found} listings. New ones auto-added to watchlist.`);
+    showStatus(`Found ${data.found} listings — ${data.new} new added to watchlist.`);
     loadProducts();
     loadSearches();
   } catch {

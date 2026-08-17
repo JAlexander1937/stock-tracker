@@ -1,7 +1,7 @@
 # Stock Tracker — Claude Code Context
 
 Personal stock monitoring tool. Python + FastAPI backend, SQLite database,
-Playwright scrapers, Claude AI agent for alerting decisions, plain HTML/JS frontend.
+Ulixee Hero scrapers (bypasses bot detection), Claude AI agent for alerting decisions, plain HTML/JS frontend.
 
 ## Run the app
 
@@ -19,9 +19,14 @@ Open http://localhost:8000
 | `backend/main.py` | FastAPI app, all REST endpoints, lifespan (starts scheduler) |
 | `backend/database.py` | SQLite init + `get_conn()` context manager |
 | `backend/scrapers/__init__.py` | `detect_retailer()` + unified `scrape(url)` dispatcher |
-| `backend/scrapers/pokemon_center.py` | Pokémon Center Playwright scraper |
-| `backend/scrapers/walmart.py` | Walmart scraper (tries `__NEXT_DATA__` JSON first) |
-| `backend/scrapers/target.py` | Target scraper (intercepts API calls, falls back to DOM) |
+| `backend/scrapers/hero_runner.py` | Generic Hero script runner — all scraping goes through this |
+| `backend/scrapers/search.py` | Keyword search dispatcher — calls `hero/{retailer}_search.js` |
+| `hero/walmart_product.js` | Walmart product page scraper (Hero) |
+| `hero/walmart_search.js` | Walmart keyword search (Hero) |
+| `hero/target_product.js` | Target product page scraper (Hero) |
+| `hero/target_search.js` | Target keyword search (Hero) |
+| `hero/pokemon_center_product.js` | Pokémon Center product page scraper (Hero) |
+| `hero/pokemon_center_search.js` | Pokémon Center keyword search (Hero) |
 | `backend/agent.py` | Calls `claude-sonnet-4-6`, returns ALERT / OPEN_URL / LOG |
 | `backend/alerts.py` | Pushover, Twilio SMS, Plyer desktop — all fail gracefully |
 | `backend/scheduler.py` | `poll_once()` + `run_scheduler()` async loop |
@@ -60,6 +65,11 @@ Without `ANTHROPIC_API_KEY` it defaults to LOG.
 
 ## Adding a new retailer
 
-1. Create `backend/scrapers/yoursite.py` with `async def scrape(url) -> dict`
-2. Add detection logic in `backend/scrapers/__init__.py`
-3. That's it — scheduler and agent work automatically.
+All scraping uses Ulixee Hero via a generic runner. No Python scraper files needed.
+
+1. Add domain detection in `backend/scrapers/__init__.py` → `detect_retailer()`
+2. Create `hero/{retailer}_product.js` — must output a single JSON object: `{name, url, price, in_stock, quantity, retailer}`
+3. Create `hero/{retailer}_search.js` — must output a JSON array: `[{name, url, price, in_stock, retailer}]`
+4. Add the retailer name to `VALID_RETAILERS` in `backend/main.py`
+
+That's it — the scheduler, agent, and search all work automatically.

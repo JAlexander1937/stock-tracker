@@ -12,5 +12,8 @@
   "type": "commonjs",
   "dependencies": {
     "@ulixee/hero-playground": "^2.0.0-alpha.34"
+  },
+  "overrides": {
+    "better-sqlite3": "^13.0.3"
   }
 }
