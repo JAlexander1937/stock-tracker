@@ -23,6 +23,16 @@ def _all_words_match(name: str | None, keyword: str) -> bool:
 
 
 async def search_retailer(keyword: str, retailer: str) -> list:
+    if retailer == "target":
+        # Target blocks the search-results endpoint (cdui-orchestrations .../slp)
+        # with 421s even after its CAPTCHA/RttCheck bot-check passes elsewhere on
+        # the same page load — unlike product pages, there's no SSR fallback with
+        # real data to read instead. Individual product URLs still work fine.
+        raise ValueError(
+            "Target keyword search is not supported — Target blocks the search results "
+            "endpoint with bot protection. Track Target products by URL instead."
+        )
+
     results = await run_hero(f"{retailer}_search", keyword)
     if not isinstance(results, list):
         logger.error("Hero search for '%s' on %s returned non-list: %s", keyword, retailer, results)

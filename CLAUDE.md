@@ -73,3 +73,13 @@ All scraping uses Ulixee Hero via a generic runner. No Python scraper files need
 4. Add the retailer name to `VALID_RETAILERS` in `backend/main.py`
 
 That's it — the scheduler, agent, and search all work automatically.
+
+## Known limitations
+
+- **Target keyword search is disabled.** Target blocks the search-results endpoint
+  (`cdui-orchestrations.target.com/.../slp`) with 421s even after its CAPTCHA/RttCheck
+  bot-check passes elsewhere on the same page — unlike product pages, there's no SSR
+  fallback with real data to fall back to. `search_retailer()` raises a clear error for
+  `target`; track Target products by URL instead. Target *product-page* scraping works
+  fine, but needs a long wait (`hero/target_product.js` waits 9s) for that same bot-check
+  to self-heal before the DOM has real price/availability data.

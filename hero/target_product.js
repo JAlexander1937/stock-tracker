@@ -37,8 +37,10 @@ async function main() {
 
     await hero.goto(url);
     await hero.waitForPaintingStable();
-    // Give API calls a moment to complete
-    await hero.waitForMillis(2000);
+    // Target runs a client-side bot-check (redsky captcha/RttCheck) on load;
+    // aux calls 403 until it resolves, then the page self-heals and hydrates
+    // with real price/availability data. Give it time to finish.
+    await hero.waitForMillis(9000);
 
     // ── API data (primary) ──────────────────────────────────────────────────
     if (apiData) {
@@ -91,12 +93,15 @@ async function main() {
       const addBtn = await hero.document.querySelector(
         'button[data-test="shipItButton"]:not([disabled]),' +
         'button[data-test="addToCartButton"]:not([disabled]),' +
-        'button[data-test="orderPickupButton"]:not([disabled])'
+        'button[data-test="orderPickupButton"]:not([disabled]),' +
+        'button[data-test="shippingButton"]:not([disabled]),' +
+        'button[data-test="driveUpButton"]:not([disabled]),' +
+        'button[data-test="sign-in-to-buy-now-button"]:not([disabled])'
       );
-      const oos = await hero.document.querySelector(
-        '[data-test="outOfStockMessage"],[data-test="OOS-message"]'
-      );
-      result.in_stock = !!addBtn && !oos;
+      // Target's OOS test-ids drift over time; body text is a more durable signal
+      const bodyText = (await hero.document.body.innerText).toLowerCase();
+      const soldOut = bodyText.includes('sold out') || bodyText.includes('out of stock');
+      result.in_stock = !!addBtn && !soldOut;
     } catch (_) {}
 
     process.stderr.write(`Target DOM fallback: name=${result.name} price=${result.price} in_stock=${result.in_stock}\n`);

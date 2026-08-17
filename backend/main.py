@@ -187,6 +187,11 @@ def list_searches():
 def add_search(body: SearchCreate):
     if body.retailer not in VALID_RETAILERS:
         raise HTTPException(status_code=400, detail=f"Retailer must be one of: {', '.join(VALID_RETAILERS)}")
+    if body.retailer == "target":
+        raise HTTPException(
+            status_code=400,
+            detail="Target keyword search is not supported — Target blocks the search results endpoint with bot protection (CAPTCHA + 421 responses) even after solving its other bot checks. To track a Target product, paste the product URL directly into 'Add Product by URL'."
+        )
 
     with get_conn() as conn:
         try:
