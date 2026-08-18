@@ -21,13 +21,13 @@
 
   <section>
     <h2>Auto-Discovery — Keyword Searches</h2>
-    <p class="section-hint">Add a keyword and retailer. The app searches every 5 minutes and automatically tracks any new listings it finds. Works with <strong>Walmart</strong> and <strong>Pokémon Center</strong>. For Target, paste individual product URLs below instead.</p>
+    <p class="section-hint">Add a keyword and retailer. The app searches every 5 minutes and automatically tracks any new listings it finds. Only <strong>Walmart</strong> is supported for keyword search. For Target, paste individual product URLs below instead. Pokémon Center isn't supported at all — see note below.</p>
     <form id="search-form">
       <input name="keyword" type="text" placeholder="Search keyword (e.g. Charizard, Pokemon cards)" required />
       <select name="retailer">
         <option value="walmart">Walmart</option>
-        <option value="pokemon_center">Pokémon Center</option>
         <option value="target" disabled style="color:#aaa">Target (not supported — use URL)</option>
+        <option value="pokemon_center" disabled style="color:#aaa">Pokémon Center (not supported)</option>
       </select>
       <input name="max_price" type="number" step="0.01" min="0" placeholder="Max price ($)" />
       <button type="submit" class="btn-primary">Add Search</button>
@@ -52,11 +52,12 @@
   <section>
     <h2>Add Product by URL</h2>
     <form id="add-form">
-      <input name="url" type="url" placeholder="Product URL (Walmart / Target / Pokémon Center)" required />
+      <input name="url" type="url" placeholder="Product URL (Walmart / Target)" required />
       <input name="max_price" type="number" step="0.01" min="0" placeholder="Max price ($)" />
       <input name="desired_qty" type="number" min="1" value="1" placeholder="Qty" />
       <button type="submit" class="btn-primary">Add to Watchlist</button>
     </form>
+    <p class="section-hint">Pokémon Center isn't supported — every request there hits a DataDome CAPTCHA, including a fresh session's first load, so there's no product URL or keyword search path that works.</p>
   </section>
 
   <section>

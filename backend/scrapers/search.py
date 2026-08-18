@@ -32,6 +32,14 @@ async def search_retailer(keyword: str, retailer: str) -> list:
             "Target keyword search is not supported — Target blocks the search results "
             "endpoint with bot protection. Track Target products by URL instead."
         )
+    if retailer == "pokemon_center":
+        # Every request — homepage, search, even a fresh session's first load —
+        # hits a DataDome CAPTCHA. Unlike Target, this isn't endpoint-specific;
+        # the whole site is behind it, so there's no product-URL fallback either.
+        raise ValueError(
+            "Pokémon Center is not supported — every request hits a DataDome CAPTCHA "
+            "with no free or reliable bypass."
+        )
 
     results = await run_hero(f"{retailer}_search", keyword)
     if not isinstance(results, list):

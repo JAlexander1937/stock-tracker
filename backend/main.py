@@ -192,6 +192,11 @@ def add_search(body: SearchCreate):
             status_code=400,
             detail="Target keyword search is not supported — Target blocks the search results endpoint with bot protection (CAPTCHA + 421 responses) even after solving its other bot checks. To track a Target product, paste the product URL directly into 'Add Product by URL'."
         )
+    if body.retailer == "pokemon_center":
+        raise HTTPException(
+            status_code=400,
+            detail="Pokémon Center is not supported at all — every request (including a fresh session's first load) hits a DataDome CAPTCHA. There's no free or reliable bypass."
+        )
 
     with get_conn() as conn:
         try:

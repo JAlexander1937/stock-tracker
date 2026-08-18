@@ -4,7 +4,12 @@ from .hero_runner import run_hero
 def detect_retailer(url: str) -> str:
     url_lower = url.lower()
     if "pokemoncenter.com" in url_lower:
-        return "pokemon_center"
+        raise ValueError(
+            "Pokémon Center is not supported — it puts every request behind a DataDome "
+            "CAPTCHA (confirmed on the homepage, search, and a fresh session's first "
+            "request), which requires solving an interactive challenge on every scrape. "
+            "There's no free or reliable bypass for this."
+        )
     if "walmart.com" in url_lower:
         return "walmart"
     if "target.com" in url_lower:
