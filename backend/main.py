@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
         pass
 
 
-app = FastAPI(title="Stock Tracker", lifespan=lifespan)
+app = FastAPI(title="StockDex", lifespan=lifespan)
 
 
 # ── Static frontend ──────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ let statusTimer;
 function showStatus(msg, error = false) {
   const bar = document.getElementById("status-bar");
   bar.textContent = msg;
-  bar.style.background = error ? "#dc2626" : "#1e293b";
+  bar.style.background = error ? "#dc2626" : "var(--accent)";
   bar.classList.add("show");
   clearTimeout(statusTimer);
   statusTimer = setTimeout(() => bar.classList.remove("show"), 3000);
@@ -26,7 +26,7 @@ function fmtDate(str) {
 
 function retailerBadge(r) {
   const labels = { walmart: "Walmart", target: "Target", pokemon_center: "Pokémon Center", bestbuy: "Best Buy", gamestop: "GameStop", samsclub: "Sam's Club" };
-  return `<span class="retailer-pill">${labels[r] || r}</span>`;
+  return `<span class="retailer-pill retailer-${r}">${labels[r] || r}</span>`;
 }
 
 function stockBadge(inStock) {
@@ -316,15 +316,32 @@ async function manualScrape(id) {
   }
 }
 
-// ── Theme modal ───────────────────────────────────────────────────────────────
+// ── Theme ────────────────────────────────────────────────────────────────────
+
+const THEME_KEY = "stockdex-theme";
+
+function applyTheme(mode) {
+  document.body.classList.toggle("dark", mode === "dark");
+}
 
 function chooseTheme(mode) {
-  document.body.classList.toggle("dark", mode === "dark");
+  localStorage.setItem(THEME_KEY, mode);
+  applyTheme(mode);
   document.getElementById("theme-modal").classList.add("hidden");
 }
 
-// Show modal on every load/refresh
-document.getElementById("theme-modal").classList.remove("hidden");
+function toggleTheme() {
+  chooseTheme(document.body.classList.contains("dark") ? "light" : "dark");
+}
+
+// Only ask on first-ever visit; remember the choice after that.
+const savedTheme = localStorage.getItem(THEME_KEY);
+if (savedTheme) {
+  applyTheme(savedTheme);
+  document.getElementById("theme-modal").classList.add("hidden");
+} else {
+  document.getElementById("theme-modal").classList.remove("hidden");
+}
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 

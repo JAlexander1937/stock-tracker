@@ -1,6 +1,6 @@
-# Stock Tracker — Claude Code Context
+# StockDex — Claude Code Context
 
-Personal stock monitoring tool. Python + FastAPI backend, SQLite database,
+Personal stock monitoring tool (formerly "Stock Tracker"). Python + FastAPI backend, SQLite database,
 Ulixee Hero scrapers (bypasses bot detection), Claude AI agent for alerting decisions, plain HTML/JS frontend.
 
 ## Run the app
@@ -40,7 +40,7 @@ Open http://localhost:8000
 | `frontend/app.js` | Fetch-based API calls, 30s auto-refresh |
 | `.env` | API keys (never commit) |
 | `.env.example` | Key names template |
-| `stock_tracker.db` | SQLite database (auto-created on first run) |
+| `stockdex.db` | SQLite database (auto-created on first run) |
 
 ## Database schema
 

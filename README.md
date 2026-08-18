@@ -1,4 +1,4 @@
-# Stock Tracker
+# StockDex
 
 A personal tool that watches products on **Walmart**, **Target**, and **Pokémon Center** for you. When something comes back in stock or drops to your target price, it sends you a push notification, an SMS, and a desktop alert — and an AI agent (powered by Claude) decides whether to open the product page in your browser automatically.
 
@@ -113,7 +113,7 @@ Pushover sends alerts directly to your phone like a text message, but through th
 1. Download the **Pushover** app on your phone (iOS or Android) — it's $5 one-time
 2. Create an account at [pushover.net](https://pushover.net)
 3. Your **User Key** is shown on the main dashboard after logging in
-4. Create an application at [pushover.net/apps/build](https://pushover.net/apps/build) — name it "Stock Tracker"
+4. Create an application at [pushover.net/apps/build](https://pushover.net/apps/build) — name it "StockDex"
 5. Copy the **API Token** it gives you
 
 Paste both into `.env`:
@@ -170,7 +170,7 @@ python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
 Open your browser and go to: **http://localhost:8000**
 
-You should see the Stock Tracker dashboard. The app is now running and polling every 60 seconds automatically.
+You should see the StockDex dashboard. The app is now running and polling every 60 seconds automatically.
 
 > To stop the app, press `Ctrl + C` in the terminal.
 

@@ -2,7 +2,7 @@ import sqlite3
 import os
 from contextlib import contextmanager
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "stock_tracker.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "stockdex.db")
 
 
 def get_db_path():
