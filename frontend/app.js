@@ -25,7 +25,7 @@ function fmtDate(str) {
 }
 
 function retailerBadge(r) {
-  const labels = { walmart: "Walmart", target: "Target", pokemon_center: "Pokémon Center", bestbuy: "Best Buy", gamestop: "GameStop" };
+  const labels = { walmart: "Walmart", target: "Target", pokemon_center: "Pokémon Center", bestbuy: "Best Buy", gamestop: "GameStop", samsclub: "Sam's Club" };
   return `<span class="retailer-pill">${labels[r] || r}</span>`;
 }
 
@@ -180,7 +180,7 @@ function renderSearches(searches) {
     tbody.innerHTML = `<tr><td colspan="6" class="empty">No searches yet. Add a keyword above to start auto-discovery.</td></tr>`;
     return;
   }
-  const retailerLabel = { walmart: "Walmart", target: "Target", pokemon_center: "Pokémon Center", bestbuy: "Best Buy", gamestop: "GameStop" };
+  const retailerLabel = { walmart: "Walmart", target: "Target", pokemon_center: "Pokémon Center", bestbuy: "Best Buy", gamestop: "GameStop", samsclub: "Sam's Club" };
   tbody.innerHTML = searches.map(s => `
     <tr>
       <td><strong>${s.keyword}</strong></td>

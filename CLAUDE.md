@@ -31,6 +31,8 @@ Open http://localhost:8000
 | `hero/bestbuy_search.js` | Best Buy keyword search (Hero) |
 | `hero/gamestop_product.js` | GameStop product page scraper (Hero) |
 | `hero/gamestop_search.js` | GameStop keyword search (Hero) |
+| `hero/samsclub_product.js` | Sam's Club product page scraper (Hero, reads `__NEXT_DATA__`) |
+| `hero/samsclub_search.js` | Sam's Club keyword search (Hero, reads `__NEXT_DATA__`) |
 | `backend/agent.py` | Calls `claude-sonnet-4-6`, returns ALERT / OPEN_URL / LOG |
 | `backend/alerts.py` | Pushover, Twilio SMS, Plyer desktop — all fail gracefully |
 | `backend/scheduler.py` | `poll_once()` + `run_scheduler()` async loop |
@@ -113,3 +115,13 @@ That's it — the scheduler, agent, and search all work automatically.
   Denied" from its edge/WAF on every request. Five Below serves a Cloudflare "Just a
   moment..." interstitial that, unlike Target's bot-check, doesn't clear even after a
   12s wait — a real block, not a timing issue. Neither is wired up as a retailer.
+
+- **Sam's Club occasionally shows a PerimeterX "prove you're not a robot" interstitial**
+  on product pages, especially under back-to-back requests. Like Target's bot-check
+  (and unlike Pokémon Center's), it self-heals given enough time — `hero/samsclub_*.js`
+  wait ~6s, then retry once with a longer wait if `__NEXT_DATA__` isn't there yet before
+  giving up. Both scripts read `__NEXT_DATA__` directly (same GraphQL schema as Walmart —
+  Sam's Club shares its stack) rather than scraping the DOM, which also sidesteps
+  needing to reverse-engineer Sam's Club-specific CSS selectors. Note Sam's Club mostly
+  carries Pokémon *merchandise* (games, plush, apparel), not TCG boxes/singles like the
+  other retailers here.

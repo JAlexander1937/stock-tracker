@@ -18,6 +18,8 @@ def detect_retailer(url: str) -> str:
         return "bestbuy"
     if "gamestop.com" in url_lower:
         return "gamestop"
+    if "samsclub.com" in url_lower:
+        return "samsclub"
     raise ValueError(f"Unsupported retailer URL: {url}")
 
 

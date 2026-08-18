@@ -162,7 +162,7 @@ def get_actions(limit: int = 50):
 
 # ── Searches ─────────────────────────────────────────────────────────────────
 
-VALID_RETAILERS = {"walmart", "target", "pokemon_center", "bestbuy", "gamestop"}
+VALID_RETAILERS = {"walmart", "target", "pokemon_center", "bestbuy", "gamestop", "samsclub"}
 
 class SearchCreate(BaseModel):
     keyword: str
