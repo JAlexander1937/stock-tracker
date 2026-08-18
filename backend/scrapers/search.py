@@ -7,19 +7,26 @@ from __future__ import annotations
 
 import logging
 import re
+import unicodedata
 
 from .hero_runner import run_hero
 
 logger = logging.getLogger(__name__)
 
 
+def _fold(text: str) -> str:
+    """Lowercase and strip accents, so 'Pokémon' matches a search for 'pokemon'."""
+    normalized = unicodedata.normalize('NFKD', text.lower())
+    return ''.join(c for c in normalized if not unicodedata.combining(c))
+
+
 def _all_words_match(name: str | None, keyword: str) -> bool:
-    """Return True if every word in keyword appears in name (case-insensitive)."""
+    """Return True if every word in keyword appears in name (case/accent-insensitive)."""
     if not name:
         return False
-    name_lower = name.lower()
-    words = re.findall(r'\w+', keyword.lower())
-    return all(w in name_lower for w in words)
+    name_folded = _fold(name)
+    words = re.findall(r'\w+', _fold(keyword))
+    return all(w in name_folded for w in words)
 
 
 async def search_retailer(keyword: str, retailer: str) -> list:

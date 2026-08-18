@@ -25,8 +25,12 @@ Open http://localhost:8000
 | `hero/walmart_search.js` | Walmart keyword search (Hero) |
 | `hero/target_product.js` | Target product page scraper (Hero) |
 | `hero/target_search.js` | Target keyword search (Hero) |
-| `hero/pokemon_center_product.js` | Pokémon Center product page scraper (Hero) |
-| `hero/pokemon_center_search.js` | Pokémon Center keyword search (Hero) |
+| `hero/pokemon_center_product.js` | Pokémon Center product page scraper (Hero) — dead code, see limitations |
+| `hero/pokemon_center_search.js` | Pokémon Center keyword search (Hero) — dead code, see limitations |
+| `hero/bestbuy_product.js` | Best Buy product page scraper (Hero) |
+| `hero/bestbuy_search.js` | Best Buy keyword search (Hero) |
+| `hero/gamestop_product.js` | GameStop product page scraper (Hero) |
+| `hero/gamestop_search.js` | GameStop keyword search (Hero) |
 | `backend/agent.py` | Calls `claude-sonnet-4-6`, returns ALERT / OPEN_URL / LOG |
 | `backend/alerts.py` | Pushover, Twilio SMS, Plyer desktop — all fail gracefully |
 | `backend/scheduler.py` | `poll_once()` + `run_scheduler()` async loop |
@@ -96,3 +100,16 @@ That's it — the scheduler, agent, and search all work automatically.
   pokemoncenter.com URL and `search_retailer()` raises for `pokemon_center`.
   `hero/pokemon_center_product.js` and `hero/pokemon_center_search.js` are dead code,
   left in place in case a real bypass becomes worth pursuing later.
+
+- **GameStop has two product-page layouts.** Simple ship-only items show a plain
+  `.add-to-cart` button. Items with in-store pickup show a richer panel instead, with
+  a top-level `.global-availability`/`.availability-msg` summary ("In Stock" / "Out of
+  Stock") that can differ from the ship-to-home-specific status elsewhere on the page.
+  `hero/gamestop_product.js` checks both signals — the button gives a baseline, and the
+  availability panel text overrides it when present, since it reflects overall
+  availability across fulfillment methods.
+
+- **Costco and Five Below were checked and skipped.** Costco returns a flat "Access
+  Denied" from its edge/WAF on every request. Five Below serves a Cloudflare "Just a
+  moment..." interstitial that, unlike Target's bot-check, doesn't clear even after a
+  12s wait — a real block, not a timing issue. Neither is wired up as a retailer.
